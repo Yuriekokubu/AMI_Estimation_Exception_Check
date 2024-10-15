@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeterID and Estimation Input</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base styling */
+        body {
+            font-family: 'Mali', sans-serif;
+            background-color: #f7f9fc;
+            background-image: url('images/alice.jpg');
+            background-size: cover;
+            background-position: center;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Form container */
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.764);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(162, 221, 255, 0.914);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #4A90E2;
+        }
+
+        .form-row {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            height: 45px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333;
+            box-sizing: border-box;
+            transition: border 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus {
+            border-color: #4A90E2;
+            outline: none;
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .form-row .radio-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357ABD;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: none;
+        }
+
+        .summary {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .summary h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .summary p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .result p {
+            font-size: 14px;
+            color: #333;
+            margin: 5px 0;
+        }
+
+        .result p.error {
+            color: red;
+        }
+
+        .result p.exception {
+            background-color: #ffdddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .form-container {
+                padding: 20px;
+            }
+
+            button {
+                font-size: 14px;
+            }
+
+            h2 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="form-container">
+        <h2>Estimation Exception</h2>
+        <form id="meterForm">
+            <div class="form-row">
+                <label for="meterid">MeterID:</label>
+                <input type="text" id="meterid" name="meterid" style="width: 100%; height: 100px;" required>
+            </div>
+            <div class=" form-row">
+                <label for="estimation">Estimation:</label>
+                <input type="text" id="estimation" name="estimation" style="width: 100%; height: 100px;">
+            </div>
+            <div class="form-row">
+                <label for="date">Select Date:</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+            <div class="form-row">
+                <label>Round:</label>
+                <div class="radio-group">
+                    <input type="radio" id="round1" name="round" value="01" checked> <label for="round1">Round 1</label>
+                    <input type="radio" id="round2" name="round" value="02"> <label for="round2">Round 2</label>
+                </div>
+            </div>
+            <button type="submit">Submit</button>
+        </form>
+
+        <div id="result" class="result"></div>
+        <div id="summary" class="summary"></div>
+    </div>
+
+    <script>
+        document.getElementById("meterForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const meterIDInput = document.getElementById("meterid").value;
+            const estimationInput = document.getElementById("estimation").value || ""; // Empty string if no input
+            const date = document.getElementById("date").value;
+            const round = document.querySelector('input[name="round"]:checked').value;
+
+            // Split meter IDs and estimations by spaces and ensure unique MeterID
+            let meterIDs = meterIDInput.split(" ");
+            const estimations = estimationInput.split(" ");
+            const resultDiv = document.getElementById("result");
+            const summaryDiv = document.getElementById("summary");
+
+            // Clear previous results
+            resultDiv.innerHTML = "";
+            summaryDiv.innerHTML = "";
+            resultDiv.style.display = "block";
+
+            // Prepare the data for Excel (two columns: MeterID and Status)
+            const worksheetData = [["MeterID", "Status"]];
+
+            let exceptionCount = 0;
+            let estimationCount = 0;
+
+            // Object to store styles for EXCEPTION rows
+            const styles = {
+                exception: {
+                    fill: {
+                        fgColor: { rgb: "FF0000" }  // Red background for EXCEPTION rows
+                    }
+                }
+            };
+
+            const sheet = {};
+
+            // Process each MeterID
+            meterIDs.forEach((meterID, index) => {
+                const estimation = estimations[index] || "";  // If estimation is missing, set as empty string
+                let status;
+
+                // Determine status based on the presence of an estimation
+                if (estimation) {
+                    status = "ESTIMATION";
+                    estimationCount++;
+                } else {
+                    status = "EXCEPTION";
+                    exceptionCount++;
+                }
+
+                // Add each row to the Excel data
+                const row = [meterID, status];
+                worksheetData.push(row);
+
+                // Add red background for EXCEPTION in Excel
+                if (status === "EXCEPTION") {
+                    const excelRow = worksheetData.length;  // Current row number
+                    sheet[`A${excelRow}`] = { v: meterID, s: styles.exception };
+                    sheet[`B${excelRow}`] = { v: status, s: styles.exception };
+                }
+            });
+
+            // Format date for sheet name (DDMMYYYY)
+            const formattedDate = date.split("-").reverse().join("");
+
+            // Generate the sheet name and file name
+            let sheetName = `${formattedDate}_EST_EXP_${round}`;
+
+            // Ensure the sheet name doesn't exceed 31 characters
+            if (sheetName.length > 31) {
+                sheetName = sheetName.slice(0, 31);  // Truncate to 31 characters
+            }
+
+            const fileName = `${sheetName}.xlsx`;
+
+            // Display summary
+            summaryDiv.innerHTML = `
+        <h3>Summary</h3>
+        <p>All exception files: ${exceptionCount}</p>
+        <p>All estimation files: ${estimationCount}</p>
+    `;
+
+            // Generate Excel file
+            try {
+                const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+                // Apply the red background style for exception rows in Excel
+                for (let cell in sheet) {
+                    if (sheet.hasOwnProperty(cell)) {
+                        worksheet[cell] = sheet[cell];  // Apply custom styles
+                    }
+                }
+
+                // Download the file
+                XLSX.writeFile(workbook, fileName);
+            } catch (error) {
+                const errorRow = document.createElement('p');
+                errorRow.textContent = `Error generating Excel file: ${error.message}`;
+                errorRow.classList.add('error');
+                resultDiv.appendChild(errorRow);
+            }
+        });
+
+    </script>
+</body>
+
+</html>
