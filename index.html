@@ -200,8 +200,10 @@
             const round = document.querySelector('input[name="round"]:checked').value;
 
             // Split meter IDs and estimations by spaces and ensure unique MeterID
-            let meterIDs = meterIDInput.split(" ");
-            const estimations = estimationInput.split(" ");
+            let meterIDs = meterIDInput.split(" ").filter(Boolean);
+            meterIDs = [...new Set(meterIDs)];  // Keep only unique MeterIDs
+            let estimations = estimationInput.split(" ").filter(Boolean);
+            estimations = [...new Set(estimations)];  // Keep only unique Estimations
             const resultDiv = document.getElementById("result");
             const summaryDiv = document.getElementById("summary");
 
@@ -227,17 +229,17 @@
 
             const sheet = {};
 
-            // Process each MeterID
-            meterIDs.forEach((meterID, index) => {
-                const estimation = estimations[index] || "";  // If estimation is missing, set as empty string
-                let status;
+            // Process each MeterID and mark them as EXCEPTION unless found in Estimations
+            meterIDs.forEach((meterID) => {
+                let status = "EXCEPTION";  // Default status is EXCEPTION
 
-                // Determine status based on the presence of an estimation
-                if (estimation) {
+                // If this MeterID has a matching Estimation, mark as ESTIMATION
+                if (estimations.includes(meterID)) {
                     status = "ESTIMATION";
                     estimationCount++;
+                    // Remove the matched estimation so it's not processed again
+                    estimations = estimations.filter(est => est !== meterID);
                 } else {
-                    status = "EXCEPTION";
                     exceptionCount++;
                 }
 
@@ -252,6 +254,9 @@
                     sheet[`B${excelRow}`] = { v: status, s: styles.exception };
                 }
             });
+
+            // We do not include Estimations that do not have corresponding MeterIDs
+            // Ignore remaining unmatched estimations
 
             // Format date for sheet name (DDMMYYYY)
             const formattedDate = date.split("-").reverse().join("");
@@ -295,6 +300,9 @@
                 resultDiv.appendChild(errorRow);
             }
         });
+
+
+
 
     </script>
 </body>
