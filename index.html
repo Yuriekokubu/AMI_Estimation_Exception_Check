@@ -199,11 +199,9 @@
             const date = document.getElementById("date").value;
             const round = document.querySelector('input[name="round"]:checked').value;
 
-            // Split meter IDs and estimations by spaces and ensure unique MeterID
+            // Split meter IDs and estimations by spaces
             let meterIDs = meterIDInput.split(" ").filter(Boolean);
-            meterIDs = [...new Set(meterIDs)];  // Keep only unique MeterIDs
             let estimations = estimationInput.split(" ").filter(Boolean);
-            estimations = [...new Set(estimations)];  // Keep only unique Estimations
             const resultDiv = document.getElementById("result");
             const summaryDiv = document.getElementById("summary");
 
@@ -218,17 +216,6 @@
             let exceptionCount = 0;
             let estimationCount = 0;
 
-            // Object to store styles for EXCEPTION rows
-            const styles = {
-                exception: {
-                    fill: {
-                        fgColor: { rgb: "FF0000" }  // Red background for EXCEPTION rows
-                    }
-                }
-            };
-
-            const sheet = {};
-
             // Process each MeterID and mark them as EXCEPTION unless found in Estimations
             meterIDs.forEach((meterID) => {
                 let status = "EXCEPTION";  // Default status is EXCEPTION
@@ -237,62 +224,38 @@
                 if (estimations.includes(meterID)) {
                     status = "ESTIMATION";
                     estimationCount++;
-                    // Remove the matched estimation so it's not processed again
-                    estimations = estimations.filter(est => est !== meterID);
                 } else {
                     exceptionCount++;
                 }
 
                 // Add each row to the Excel data
-                const row = [meterID, status];
-                worksheetData.push(row);
-
-                // Add red background for EXCEPTION in Excel
-                if (status === "EXCEPTION") {
-                    const excelRow = worksheetData.length;  // Current row number
-                    sheet[`A${excelRow}`] = { v: meterID, s: styles.exception };
-                    sheet[`B${excelRow}`] = { v: status, s: styles.exception };
-                }
+                worksheetData.push([meterID, status]);
             });
-
-            // We do not include Estimations that do not have corresponding MeterIDs
-            // Ignore remaining unmatched estimations
-
-            // Format date for sheet name (DDMMYYYY)
-            const formattedDate = date.split("-").reverse().join("");
-
-            // Generate the sheet name and file name
-            let sheetName = `${formattedDate}_EST_EXP_${round}`;
-
-            // Ensure the sheet name doesn't exceed 31 characters
-            if (sheetName.length > 31) {
-                sheetName = sheetName.slice(0, 31);  // Truncate to 31 characters
-            }
-
-            const fileName = `${sheetName}.xlsx`;
 
             // Display summary
             summaryDiv.innerHTML = `
-        <h3>Summary</h3>
-        <p>All exception files: ${exceptionCount}</p>
-        <p>All estimation files: ${estimationCount}</p>
-    `;
+                <h3>Summary</h3>
+                <p>All exception files: ${meterIDs.length}</p>
+                <p>All estimation files: ${estimations.length}</p>
+                <p>----------------------</p>
+                <p>- exception = ${exceptionCount}</p>
+                <p>- estimation = ${estimationCount}</p>
+            `;
 
             // Generate Excel file
             try {
                 const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
                 const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+                const formattedDate = date.split("-").reverse().join("");
+                let sheetName = `${formattedDate}_EST_EXP_${round}`;
 
-                // Apply the red background style for exception rows in Excel
-                for (let cell in sheet) {
-                    if (sheet.hasOwnProperty(cell)) {
-                        worksheet[cell] = sheet[cell];  // Apply custom styles
-                    }
+                // Ensure the sheet name doesn't exceed 31 characters
+                if (sheetName.length > 31) {
+                    sheetName = sheetName.slice(0, 31);
                 }
 
-                // Download the file
-                XLSX.writeFile(workbook, fileName);
+                XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+                XLSX.writeFile(workbook, `${sheetName}.xlsx`);
             } catch (error) {
                 const errorRow = document.createElement('p');
                 errorRow.textContent = `Error generating Excel file: ${error.message}`;
@@ -300,10 +263,6 @@
                 resultDiv.appendChild(errorRow);
             }
         });
-
-
-
-
     </script>
 </body>
 
