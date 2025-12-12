@@ -7,154 +7,447 @@
     <title>ESTIMATION EXCEPTION WONDERLAND</title>
     <link rel="icon" type="image/x-icon" href="images/alice.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;700&family=Poppins:wght@300;500;700&display=swap"
+        rel="stylesheet">
     <style>
-        /* Base styling */
+        /* BASE STYLES */
         body {
-            font-family: 'Mali', sans-serif;
-            background-color: #f7f9fc;
-            background-image: url('images/alice.jpg');
+            font-family: 'Poppins', 'Mali', sans-serif;
+            background-color: #b0c8e658;
+            background-image: url('images/alice3.jpg');
             background-size: cover;
+            background-attachment: fixed;
             background-position: center;
             color: #333;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
         }
 
-        /* Form container */
+        /* FORM CONTAINER - ส่วนเถากุหลาบ */
         .form-container {
-            background-color: rgba(255, 255, 255, 0.764);
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(162, 221, 255, 0.914);
-            max-width: 500px;
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.792);
+            padding: 60px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
             width: 100%;
             text-align: center;
+            animation: fadeIn 0.8s ease-out;
+            margin-top: 30px;
+
+            background-image: none;
+            border: 5px solid #d45f78;
+            outline: 5px solid white;
+            outline-offset: 10px;
+        }
+
+        /* NEW: กำหนดให้ Form เป็น relative เพื่อให้สามารถใช้ Pseudo-elements ในการวางภาพมุมล่างได้ */
+        #meterForm {
+            position: relative;
+        }
+
+        /* NEW: สไตล์ร่วมสำหรับ Pseudo-elements ทั้ง 4 มุม (กุหลาบที่ลอยอยู่) */
+        .form-container::before,
+        .form-container::after,
+        #meterForm::before,
+        #meterForm::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* 1. มุมบนซ้าย (Top Left Rose) */
+        .form-container::before {
+            top: -50px;
+            left: -60px;
+            background-image: url('images/rose_top_left2.png');
+        }
+
+        /* 2. มุมบนขวา (Top Right Rose) */
+        .form-container::after {
+            top: -75px;
+            right: -75px;
+            background-image: url('images/rose_top_right.png');
+        }
+
+        /* 3. มุมล่างซ้าย (Bottom Left Rose) - อ้างอิงจาก #meterForm */
+        #meterForm::before {
+            bottom: -75px;
+            left: -75px;
+            background-image: url('images/rose_bottom_left.png');
+        }
+
+        /* 4. มุมล่างขวา (Cheshire Cat) - อ้างอิงจาก #meterForm */
+        #meterForm::after {
+            bottom: -80px;
+            right: -250px;
+            background-image: url('images/cat.webp');
+            width: 350px;
+            height: 350px;
+            transition: all 1s ease-in-out;
+        }
+
+        /* ** FIX: CSS สำหรับเลื่อนแมวตัวเดิมให้ลงมาอยู่ด้านล่างสุดและอยู่ถาวร ** */
+        #meterForm.cat-final-position::after {
+            /* เลื่อนลงมา 400px ซึ่งเพียงพอที่จะพาแมวลงไปอยู่ใต้ Summary ที่เพิ่มเข้ามา */
+            transform: translateY(350px) scale(1);
+            opacity: 1;
+        }
+
+        /* ================================================= */
+        /* === CHESHIRE CAT SPEECH BUBBLE EFFECT === */
+        /* ================================================= */
+
+        /* Speech Bubble Container */
+        .cheshire-speech {
+            position: absolute;
+            bottom: 130px;
+            right: -200px;
+            width: 150px;
+            padding: 10px;
+            background: #ffcce5;
+            /* สีเริ่มต้น */
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            font-size: 14px;
+            font-weight: 700;
+            color: #b700ff;
+            /* สีเริ่มต้น */
+            text-align: center;
+            opacity: 0.9;
+            z-index: 20;
+            transition: all 0.3s ease-in-out, transform 1s ease-in-out;
+            /* เพิ่ม transform transition */
+            /* แอนิเมชันสำหรับสถานะเริ่มต้น */
+            animation:
+                blink-text 5s infinite alternate,
+                float-up 3s ease-in-out infinite;
+        }
+
+        /* Speech Bubble Pointer (สามเหลี่ยมชี้ไปที่หัวแมว) */
+        .cheshire-speech::before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            right: 70px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #ffcce5;
+            transition: border-top 0.3s ease-in-out;
+        }
+
+
+        /* ** CSS สำหรับกล่องคำพูด "Thank you!" และการเลื่อนลงถาวร (เมื่อสำเร็จ) ** */
+        .cheshire-speech.speech-final-position {
+            /* เลื่อนลงมา 250px เมื่อ Form ถูกขยายออก */
+            transform: translateY(250px);
+            opacity: 1;
+            /* เปลี่ยนสไตล์ให้เป็น Thank You */
+            background: #ffe351;
+            color: #5a1467;
+            border: 2px solid #5a1467;
+            /* ลบ animation ลอยขึ้นลง */
+            animation: none;
+            /* ปรับตำแหน่งตามแนวตั้งให้เหมาะสมกับแมวที่เลื่อนลงมาแล้ว */
+            bottom: 10px;
+        }
+
+        /* ปรับสามเหลี่ยมชี้ของกล่องคำพูด Thank You */
+        .cheshire-speech.speech-final-position::before {
+            border-top: 10px solid #ffe351;
+        }
+
+        /* ** NEW: CSS สำหรับกล่องคำพูดเตือน (เมื่อยังไม่ครบ) ** */
+        .cheshire-speech.speech-warning {
+            background: #d93025;
+            /* สีแดง */
+            color: white;
+            border: 2px solid white;
+            animation: bounce-once 2s ease-out 1;
+            /* เด้งเตือน */
+        }
+
+        /* ปรับสามเหลี่ยมชี้ของกล่องคำพูดเตือน */
+        .cheshire-speech.speech-warning::before {
+            border-top: 10px solid #d93025;
+        }
+
+        /* Animation: Floating */
+        @keyframes float-up {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        /* NEW: Animation: Bounce Once (สำหรับเตือน) */
+        @keyframes bounce-once {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* ================================================= */
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         h2 {
-            margin-bottom: 20px;
-            font-size: 24px;
-            color: #4A90E2;
+            margin-bottom: 30px;
+            font-size: 32px;
+            color: #ff30be;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
         }
 
-        .form-row {
+        /* GRID LAYOUT FOR INPUTS (ไม่มีการเปลี่ยนแปลง) */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 30px;
             margin-bottom: 25px;
-            text-align: left;
+        }
+
+        .form-row.full-width {
+            grid-column: 1 / -1;
         }
 
         label {
-            font-size: 14px;
-            font-weight: bold;
-            color: #555;
+            font-size: 15px;
+            font-weight: 500;
+            color: #333;
             display: block;
             margin-bottom: 8px;
+            text-align: left;
         }
 
-        input[type="text"],
-        input[type="date"] {
+        /* INPUT FIELDS (ไม่มีการเปลี่ยนแปลง) */
+        input[type="date"],
+        textarea {
             width: 100%;
-            height: 45px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            min-height: 45px;
+            padding: 10px 15px;
+            border: 1px solid #c8d1da;
+            border-radius: 10px;
             font-size: 16px;
             color: #333;
             box-sizing: border-box;
-            transition: border 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
-        input[type="text"]:focus,
-        input[type="date"]:focus {
-            border-color: #4A90E2;
+        #meterid,
+        #estimation {
+            height: 150px;
+            resize: vertical;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* กรอบสีชมพูสำหรับฟิลด์ที่ต้องกรอกแต่ยังว่างอยู่ */
+        input[required]:invalid:not(:focus),
+        textarea[required]:invalid:not(:focus) {
+            border-color: #ff6b81;
+            /* สีแดงอมชมพูสำหรับแจ้งเตือน */
+            box-shadow: 0 0 0 3px rgba(255, 107, 129, 0.3);
+        }
+
+        input[type="date"]:focus,
+        textarea:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
             outline: none;
+            background-color: #ffffff;
+        }
+
+        /* RADIO BUTTONS (ROUND) (ไม่มีการเปลี่ยนแปลง) */
+        .radio-group {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            padding-top: 5px;
+        }
+
+        .radio-group label {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 400;
+            transition: color 0.3s;
         }
 
         input[type="radio"] {
-            margin-right: 10px;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #aab6c4;
+            border-radius: 50%;
+            margin-right: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
         }
 
-        .form-row .radio-group {
-            display: flex;
-            gap: 10px;
+        input[type="radio"]:checked {
+            border-color: #1a73e8;
         }
 
+        input[type="radio"]:checked::after {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: #1a73e8;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+
+        /* BUTTON (ไม่มีการเปลี่ยนแปลง) */
         button {
             width: 100%;
-            padding: 12px 20px;
-            background-color: #4A90E2;
+            padding: 16px 20px;
+            background-color: #cd44ff;
             color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 19px;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 15px rgba(69, 10, 86, 0.3);
+            transition: all 0.3s ease;
+            margin-top: 15px;
         }
 
         button:hover {
-            background-color: #357ABD;
+            background-color: #b700ff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
 
-        .result {
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            display: none;
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(26, 115, 232, 0.3);
         }
 
+        /* RESULTS / SUMMARY (ไม่มีการเปลี่ยนแปลง) */
+        .result,
         .summary {
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f0f0f0;
-            font-size: 14px;
-            color: #333;
+            margin-top: 30px;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            background-color: #f7f9fc;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .result.show,
+        .summary.show {
+            opacity: 1;
+            transform: translateY(0);
+            display: block !important;
         }
 
         .summary h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #1a73e8;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
         }
 
         .summary p {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-
-        .result p {
-            font-size: 14px;
-            color: #333;
-            margin: 5px 0;
+            margin: 10px 0;
+            font-size: 16px;
         }
 
         .result p.error {
-            color: red;
+            color: #d93025;
+            font-weight: 500;
         }
 
-        .result p.exception {
-            background-color: #ffdddd;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        @media (max-width: 600px) {
+        /* RESPONSIVE DESIGN (Media Queries) */
+        @media (max-width: 768px) {
             .form-container {
-                padding: 20px;
+                padding: 25px;
+                margin-top: 10px;
+
+                /* ลบเถาวัลย์และขอบออกในจอเล็ก */
+                background-image: none;
+                border: none;
+                outline: none;
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+                /* กลับไปใช้ Shadow แทน */
             }
 
-            button {
-                font-size: 14px;
+            /* NEW: ซ่อนกุหลาบและแมวเมื่ออยู่บนจอเล็ก */
+            .form-container::before,
+            .form-container::after,
+            #meterForm::before,
+            #meterForm::after,
+            .cheshire-speech {
+                display: none !important;
             }
 
             h2 {
-                font-size: 22px;
+                font-size: 26px;
+            }
+
+            .input-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .form-row.full-width {
+                grid-column: auto;
+            }
+
+            .radio-group {
+                flex-direction: row;
+                justify-content: flex-start;
+            }
+
+            #meterid,
+            #estimation {
+                height: 120px;
             }
         }
     </style>
@@ -163,77 +456,123 @@
 <body>
 
     <div class="form-container">
-        <h2>Estimation Exception</h2>
-        <form id="meterForm">
-            <div class="form-row">
-                <label for="meterid">MeterID:</label>
-                <input type="text" id="meterid" name="meterid" style="width: 100%; height: 100px;" required>
+        <h2>✨ Estimation Exception Wonderland</h2>
+        <form id="meterForm" novalidate>
+            <div class="cheshire-speech">
+                Where are the Exceptions?
             </div>
-            <div class=" form-row">
-                <label for="estimation">Estimation:</label>
-                <input type="text" id="estimation" name="estimation" style="width: 100%; height: 100px;">
-            </div>
-            <div class="form-row">
-                <label for="date">Select Date:</label>
-                <input type="date" id="date" name="date" required>
-            </div>
-            <div class="form-row">
-                <label>Round:</label>
-                <div class="radio-group">
-                    <input type="radio" id="round1" name="round" value="01" checked> <label for="round1">Round 1</label>
-                    <input type="radio" id="round2" name="round" value="02"> <label for="round2">Round 2</label>
+
+            <div class="input-grid">
+
+                <div class="form-row full-width">
+                    <label for="meterid">MeterID :</label>
+                    <textarea id="meterid" name="meterid" required></textarea>
                 </div>
+
+                <div class="form-row full-width">
+                    <label for="estimation">Estimation :</label>
+                    <textarea id="estimation" name="estimation"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <label for="date">เลือกวันที่:</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+
+                <div class="form-row">
+                    <label>รอบ (Round):</label>
+                    <div class="radio-group">
+                        <input type="radio" id="round1" name="round" value="01" checked> <label for="round1">Round
+                            1</label>
+                        <input type="radio" id="round2" name="round" value="02"> <label for="round2">Round 2</label>
+                    </div>
+                </div>
+
             </div>
-            <button type="submit">Submit</button>
+
+            <button type="submit">ประมวลผลและดาวน์โหลด Excel</button>
         </form>
 
-        <div id="result" class="result"></div>
-        <div id="summary" class="summary"></div>
+        <div id="result" class="result" style="display: none;"></div>
+        <div id="summary" class="summary" style="display: none;"></div>
     </div>
 
     <script>
         document.getElementById("meterForm").addEventListener("submit", function (event) {
             event.preventDefault();
 
+            const meterForm = document.getElementById("meterForm");
+            const speechBubble = document.querySelector('.cheshire-speech');
+
+            // --- ตรวจสอบความถูกต้องของฟอร์ม (Validation Check) ---
+            if (!meterForm.checkValidity()) {
+
+                // 1. ถ้าฟอร์มไม่สมบูรณ์ (มี required field ที่ยังว่างอยู่)
+
+                // ลบ class แสดงความสำเร็จออก เผื่อว่าเคยสำเร็จมาก่อน
+                speechBubble.classList.remove('speech-final-position');
+                meterForm.classList.remove('cat-final-position');
+
+                // เพิ่ม class เตือนและเปลี่ยนข้อความ
+                speechBubble.textContent = "Oops! Missing required fields!";
+                speechBubble.classList.add('speech-warning');
+
+                // ลบ class เตือนออกหลังจาก 3 วินาที เพื่อให้กลับสู่สถานะเดิมและสามารถแสดง animation เดิมได้อีก
+                setTimeout(() => {
+                    speechBubble.classList.remove('speech-warning');
+                    speechBubble.textContent = "Where are the Exceptions?"; // คืนข้อความเดิม
+                }, 3000);
+
+                // หยุดการทำงานของ Process Logic
+                return;
+            }
+
+            // --- 2. ถ้าฟอร์มสมบูรณ์แล้ว (Success Logic) ---
+
+            // เปลี่ยนข้อความและสไตล์ของกล่องคำพูด (Success)
+            speechBubble.textContent = "Thank you! ❤️";
+            speechBubble.classList.remove('speech-warning'); // ลบ warning ออก
+            speechBubble.classList.add('speech-final-position');
+
+            // เลื่อนแมวลงไปตำแหน่งสุดท้าย
+            meterForm.classList.add('cat-final-position');
+
+
+            // --- 3. Process Logic ---
             const meterIDInput = document.getElementById("meterid").value;
-            const estimationInput = document.getElementById("estimation").value || ""; // Empty string if no input
+            const estimationInput = document.getElementById("estimation").value || "";
             const date = document.getElementById("date").value;
             const round = document.querySelector('input[name="round"]:checked').value;
 
-            // Split meter IDs and estimations by spaces
-            let meterIDs = meterIDInput.split(" ").filter(Boolean);
-            let estimations = estimationInput.split(" ").filter(Boolean);
+            // แก้ไขการแยกด้วยช่องว่างหรือบรรทัดใหม่
+            let meterIDs = meterIDInput.split(/\s+/).filter(Boolean);
+            let estimations = estimationInput.split(/\s+/).filter(Boolean);
+
             const resultDiv = document.getElementById("result");
             const summaryDiv = document.getElementById("summary");
 
-            // Clear previous results
             resultDiv.innerHTML = "";
             summaryDiv.innerHTML = "";
-            resultDiv.style.display = "block";
+            resultDiv.classList.remove('show');
+            summaryDiv.classList.remove('show');
+            summaryDiv.style.display = "block"; // ต้องแสดงผลเพื่อคำนวณความสูงใหม่
 
-            // Prepare the data for Excel (two columns: MeterID and Status)
             const worksheetData = [["MeterID", "Status"]];
-
             let exceptionCount = 0;
             let estimationCount = 0;
 
-            // Process each MeterID and mark them as EXCEPTION unless found in Estimations
             meterIDs.forEach((meterID) => {
-                let status = "EXCEPTION";  // Default status is EXCEPTION
-
-                // If this MeterID has a matching Estimation, mark as ESTIMATION
+                let status = "EXCEPTION";
                 if (estimations.includes(meterID)) {
                     status = "ESTIMATION";
                     estimationCount++;
                 } else {
                     exceptionCount++;
                 }
-
-                // Add each row to the Excel data
                 worksheetData.push([meterID, status]);
             });
 
-            // Display summary
+            // Summary (English)
             summaryDiv.innerHTML = `
                 <h3>Summary</h3>
                 <p>All exception files: ${meterIDs.length}</p>
@@ -243,14 +582,16 @@
                 <p>- estimation = ${estimationCount}</p>
             `;
 
-            // Generate Excel file
+            setTimeout(() => {
+                summaryDiv.classList.add('show');
+            }, 100);
+
             try {
                 const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
                 const workbook = XLSX.utils.book_new();
                 const formattedDate = date.split("-").reverse().join("");
                 let sheetName = `${formattedDate}_EST_EXP_${round}`;
 
-                // Ensure the sheet name doesn't exceed 31 characters
                 if (sheetName.length > 31) {
                     sheetName = sheetName.slice(0, 31);
                 }
@@ -259,9 +600,13 @@
                 XLSX.writeFile(workbook, `${sheetName}.xlsx`);
             } catch (error) {
                 const errorRow = document.createElement('p');
-                errorRow.textContent = `Error generating Excel file: ${error.message}`;
+                errorRow.textContent = `⚠️ Error generating Excel file: ${error.message}`;
                 errorRow.classList.add('error');
                 resultDiv.appendChild(errorRow);
+
+                setTimeout(() => {
+                    resultDiv.classList.add('show');
+                }, 100);
             }
         });
     </script>
