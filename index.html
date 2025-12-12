@@ -44,12 +44,71 @@
             border: 5px solid #d45f78;
             outline: 5px solid white;
             outline-offset: 10px;
+
+            /* เพิ่ม transition เพื่อให้ซ่อน/แสดงผลดูสวยงามขึ้น */
+            transition: all 0.5s ease-in-out;
+        }
+
+        /* NEW: คลาสสำหรับซ่อน Form Container */
+        .form-container.hide-form {
+            opacity: 0;
+            transform: scale(0.9);
+            /* ย่อขนาดลงเล็กน้อย */
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            overflow: hidden;
+            border-width: 0;
+            outline: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        /* NEW: สไตล์สำหรับปุ่ม Toggle (Fixed Position) */
+        #toggleButton {
+            position: fixed;
+            /* ยึดติดกับหน้าจอ */
+            top: 20px;
+            /* ระยะห่างจากด้านบนจอ */
+            right: 20px;
+            /* ระยะห่างจากด้านขวาจอ */
+            width: auto;
+            /* ปรับให้ขนาดพอดีกับข้อความ */
+            padding: 8px 15px;
+            background-color: #1a73e800;
+            /* สีน้ำเงิน */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 50px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.3s;
+            z-index: 100;
+            /* ให้อยู่เหนือทุกอย่าง */
+        }
+
+        #toggleButton:hover {
+            background-color: #0b5bc300;
+            transform: scale(1.05);
         }
 
         /* NEW: กำหนดให้ Form เป็น relative เพื่อให้สามารถใช้ Pseudo-elements ในการวางภาพมุมล่างได้ */
         #meterForm {
             position: relative;
+            /* เพิ่ม transition เพื่อให้ซ่อน/แสดงผลดูสวยงามขึ้น */
+            transition: opacity 0.3s ease-in-out;
         }
+
+        /* NEW: เมื่อฟอร์มถูกซ่อน ให้ส่วนประกอบอื่นๆ ใน Form-container หายไปด้วย */
+        .form-container.hide-form h2,
+        .form-container.hide-form #meterForm,
+        .form-container.hide-form .result,
+        .form-container.hide-form .summary {
+            display: none;
+        }
+
 
         /* NEW: สไตล์ร่วมสำหรับ Pseudo-elements ทั้ง 4 มุม (กุหลาบที่ลอยอยู่) */
         .form-container::before,
@@ -64,6 +123,16 @@
             background-repeat: no-repeat;
             z-index: 10;
             pointer-events: none;
+            /* เพิ่ม transition สำหรับเถาวัลย์ */
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* NEW: ซ่อนเถาวัลย์เมื่อ Form ถูกซ่อน */
+        .form-container.hide-form::before,
+        .form-container.hide-form::after,
+        .form-container.hide-form #meterForm::before,
+        .form-container.hide-form #meterForm::after {
+            opacity: 0;
         }
 
         /* 1. มุมบนซ้าย (Top Left Rose) */
@@ -455,6 +524,8 @@
 
 <body>
 
+    <button id="toggleButton" onclick="toggleFormVisibility()">🐰</button>
+
     <div class="form-container">
         <h2>✨ Estimation Exception Wonderland</h2>
         <form id="meterForm" novalidate>
@@ -480,7 +551,7 @@
                 </div>
 
                 <div class="form-row">
-                    <label>รอบ (Round):</label>
+                    <label>Round: </label>
                     <div class="radio-group">
                         <input type="radio" id="round1" name="round" value="01" checked> <label for="round1">Round
                             1</label>
@@ -498,6 +569,22 @@
     </div>
 
     <script>
+        // NEW: ฟังก์ชันสำหรับสลับการแสดงผล
+        function toggleFormVisibility() {
+            const container = document.querySelector('.form-container');
+            const button = document.getElementById('toggleButton');
+
+            // ใช้ classList.toggle ในการเพิ่ม/ลบคลาส 'hide-form'
+            container.classList.toggle('hide-form');
+
+            // เปลี่ยนข้อความและไอคอนของปุ่มตามสถานะ
+            if (container.classList.contains('hide-form')) {
+                button.textContent = '🎩';
+            } else {
+                button.textContent = '🐰';
+            }
+        }
+
         document.getElementById("meterForm").addEventListener("submit", function (event) {
             event.preventDefault();
 
